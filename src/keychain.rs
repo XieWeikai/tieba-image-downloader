@@ -1,6 +1,11 @@
-use crate::{AppError, Result};
+use crate::Result;
 
+#[cfg(target_os = "macos")]
+use crate::AppError;
+
+#[cfg(target_os = "macos")]
 const SERVICE: &str = "tieba-image-downloader";
+#[cfg(target_os = "macos")]
 const ACCOUNT: &str = "tieba.baidu.com-session";
 
 #[cfg(target_os = "macos")]
