@@ -1,0 +1,6 @@
+/target/
+*.part
+cookie.txt
+cookies.txt
+*.cookies
+.DS_Store

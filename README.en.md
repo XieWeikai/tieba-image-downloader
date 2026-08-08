@@ -1,0 +1,123 @@
+# Tieba Image Downloader
+
+English | [简体中文](README.md)
+
+A high-performance macOS utility for batch-downloading original images from Baidu Tieba post bodies. It supports Tieba's client-rendered pages, opens an isolated Chrome window when login or security verification is required, captures paginated data automatically, and downloads images with resumability and validation.
+
+> Download only content you are authorized to access and save. This program does not solve CAPTCHAs, bypass access controls, or inspect your personal Chrome profile.
+
+## Features
+
+- Download body images from all replies or from the original author only.
+- Exclude avatars, emoticons, and decorative page assets.
+- Support both legacy HTML and current Vue client-rendered pages.
+- Use an isolated Chrome session without DevTools or manual cookie copying.
+- Import only `baidu.com` cookies and optionally store them in macOS Keychain.
+- Stable ordering, URL deduplication, deterministic names, and a JSON manifest.
+- Streaming downloads, `.part` resume, per-item retries, and safe Ctrl+C handling.
+- Adaptive concurrency with backoff and cooldown on HTTP 403/429.
+- Validate status, `Content-Type`, and Range responses to reject HTML error pages.
+
+## Requirements
+
+- macOS 12 or newer.
+- Google Chrome, Chromium, or Brave for client rendering and official verification when required.
+- Rust stable and Cargo when building from source.
+
+## Installation
+
+Download the binary from GitHub Releases, make it executable, and run it:
+
+```bash
+chmod +x tieba-image-downloader
+./tieba-image-downloader
+```
+
+Build from source:
+
+```bash
+git clone https://github.com/XieWeikai/tieba-image-downloader.git
+cd tieba-image-downloader
+./install-macos.sh
+```
+
+The binary is written to `target/release/tieba-image-downloader`.
+
+## Usage
+
+Run without arguments for the interactive wizard:
+
+```bash
+tieba-image-downloader
+```
+
+Download a post directly:
+
+```bash
+tieba-image-downloader 'https://tieba.baidu.com/p/10918721568'
+```
+
+Common examples:
+
+```bash
+tieba-image-downloader URL --output ~/Downloads/my-thread
+tieba-image-downloader URL --only-author
+tieba-image-downloader URL --concurrency 8
+tieba-image-downloader URL --concurrency 8 --auto-concurrency false
+tieba-image-downloader URL --remember-login false
+tieba-image-downloader URL --clear-login
+tieba-image-downloader URL --chrome-path '/Applications/Chromium.app/Contents/MacOS/Chromium'
+```
+
+The default output directory is `~/Downloads/tieba_<post ID>`. Run `tieba-image-downloader --help` for every option.
+
+## Browser Login
+
+When the first request is challenged or requires client rendering, the program opens a visible Chrome instance with a dedicated profile. Complete any login or verification on Baidu's official page; the program resumes automatically. By default, the resulting session is reused through macOS Keychain.
+
+```mermaid
+flowchart LR
+    A[Single-request preflight] --> B{Directly parseable?}
+    B -- Yes --> E[Scan HTML]
+    B -- Challenge or CSR --> C[Launch isolated Chrome]
+    C --> D[User completes official verification]
+    D --> F[Capture page_pc through CDP]
+    E --> G[Original-image records]
+    F --> G
+    G --> H[Deduplicate, name, download]
+```
+
+Advanced users may still import a raw Cookie header or Netscape `cookies.txt` with `--cookie-file`. Treat cookies as credentials: never commit, paste, or share them.
+
+## Output and Resume
+
+```text
+manifest.json         Order, floor, author, URL, and target filename
+download-state.json   Per-item status, byte count, error, and timestamp
+failed.json           Items that failed in the current run
+*.part                Incomplete resumable data
+00001_f0001_hash.jpg  Completed image
+```
+
+Run again with the same output directory to resume. A 206 response is appended only after validating `Content-Range`; a 200 response restarts the file; a 416 response is accepted only when the server's total equals the local size.
+
+## Development
+
+```bash
+cargo fmt --all --check
+cargo check --all-targets
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-targets
+cargo build --release
+```
+
+## Documentation
+
+- [系统架构](docs/architecture.md) / [Architecture](docs/architecture.en.md)
+- [模块设计](docs/modules.md) / [Module Design](docs/modules.en.md)
+- [贴吧页面结构](docs/tieba-page-structure.md) / [Tieba Page Structure](docs/tieba-page-structure.en.md)
+- [测试报告](docs/test-report.md) / [Test Report](docs/test-report.en.md)
+
+## License
+
+MIT License.
