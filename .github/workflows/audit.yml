@@ -18,15 +18,16 @@ on:
 
 permissions:
   contents: read
-  checks: write
-  issues: write
 
 jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Audit Cargo.lock
-        uses: rustsec/audit-check@v2.0.0
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          tool: cargo-audit
+          fallback: none
+      - name: Audit Cargo.lock
+        run: cargo audit
