@@ -4,6 +4,12 @@ version = "0.3.0"
 edition = "2024"
 description = "High performance, resumable Baidu Tieba original image downloader"
 license = "MIT"
+repository = "https://github.com/XieWeikai/tieba-image-downloader"
+homepage = "https://github.com/XieWeikai/tieba-image-downloader"
+documentation = "https://docs.rs/tieba-image-downloader"
+readme = "README.md"
+keywords = ["tieba", "downloader", "images", "cli", "macos"]
+categories = ["command-line-utilities", "network-programming"]
 
 [dependencies]
 anyhow = "1"
