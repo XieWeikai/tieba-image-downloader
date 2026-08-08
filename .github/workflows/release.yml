@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.suffix }}
+    if: startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            target: aarch64-apple-darwin
+            suffix: macos-arm64
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            suffix: macos-x86_64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - name: Run tests
+        run: cargo test --all-targets --locked
+      - name: Build release binary
+        run: cargo build --release --locked --target "${{ matrix.target }}"
+      - name: Package binary
+        env:
+          ARCHIVE: tieba-image-downloader-${{ github.ref_name }}-${{ matrix.suffix }}.tar.gz
+          TARGET: ${{ matrix.target }}
+        run: |
+          mkdir -p dist
+          tar -C "target/${TARGET}/release" -czf "dist/${ARCHIVE}" tieba-image-downloader
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.suffix }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Generate checksums
+        run: sha256sum dist/*.tar.gz > dist/SHA256SUMS
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1 || \
+            gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+              --draft --verify-tag --generate-notes --title "${GITHUB_REF_NAME}"
+      - name: Upload assets and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" dist/* --clobber --repo "${GITHUB_REPOSITORY}"
+          gh release edit "${GITHUB_REF_NAME}" --draft=false --repo "${GITHUB_REPOSITORY}"
