@@ -55,7 +55,7 @@ Recommended required checks for `main` are both Rust CI jobs, Documentation, and
 
 ## Security Automation
 
-CodeQL finds dangerous source-level data flows; `cargo audit` compares locked dependencies against RustSec advisories. They are complementary. Dependabot proposes updates but does not auto-merge them: networking, parsing, browser-protocol, and Keychain changes should pass review and tests first.
+CodeQL finds dangerous source-level data flows. Its Rust extractor uses the required `build-mode: none` to analyze source directly, while Rust CI independently guarantees compilation. `cargo audit` compares locked dependencies against RustSec advisories. They are complementary. Dependabot proposes updates but does not auto-merge them: networking, parsing, browser-protocol, and Keychain changes should pass review and tests first.
 
 Workflows are read-only by default. Only CodeQL receives `security-events: write`, and Release receives `contents: write`. No custom secret is required; publishing uses GitHub's short-lived, scoped `GITHUB_TOKEN`.
 

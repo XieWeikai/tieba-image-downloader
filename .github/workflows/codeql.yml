@@ -23,9 +23,6 @@ jobs:
       - uses: github/codeql-action/init@v4
         with:
           languages: rust
-          build-mode: manual
+          build-mode: none
           queries: security-extended
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Build
-        run: cargo build --release --locked
       - uses: github/codeql-action/analyze@v4

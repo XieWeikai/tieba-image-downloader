@@ -55,7 +55,7 @@ sequenceDiagram
 
 ## 安全自动化
 
-CodeQL 分析源码中的危险数据流；`cargo audit` 对照 RustSec 数据库检查锁定依赖。两者互补，不能互相替代。Dependabot 只提出更新，不自动合并：网络、解析器、浏览器协议和钥匙串依赖都应先经过测试。
+CodeQL 分析源码中的危险数据流；Rust 提取器使用其要求的 `build-mode: none` 直接分析源码，编译正确性由 Rust CI 独立保证。`cargo audit` 对照 RustSec 数据库检查锁定依赖。两者互补，不能互相替代。Dependabot 只提出更新，不自动合并：网络、解析器、浏览器协议和钥匙串依赖都应先经过测试。
 
 所有 Workflow 默认只读。只有 CodeQL 获得 `security-events: write`，Release 获得 `contents: write`。仓库不需要自定义 Secret；发布使用 GitHub 自动提供、作用域受限的 `GITHUB_TOKEN`。
 
