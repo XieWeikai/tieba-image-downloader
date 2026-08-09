@@ -26,6 +26,21 @@ A high-performance macOS utility for batch-downloading original images from Baid
 
 ## Installation
 
+### AI plugin (recommended)
+
+After installing the plugin, give ChatGPT/Codex or Claude Code a Tieba URL directly; no manual CLI invocation is required. On first use, the skill downloads the matching macOS release and verifies it against `SHA256SUMS` before execution.
+
+Claude Code:
+
+```text
+/plugin marketplace add XieWeikai/tieba-image-downloader
+/plugin install tieba-image-downloader@tieba-tools
+```
+
+Then ask it to "download every original image from `https://tieba.baidu.com/p/10918721568`", or invoke `/tieba-image-downloader:download-tieba-images` explicitly. See [Plugin Design and Usage](docs/plugin.en.md) for ChatGPT/Codex and local development installation.
+
+### CLI
+
 Download the binary from GitHub Releases, make it executable, and run it:
 
 ```bash
@@ -117,6 +132,8 @@ cargo build --release
 - [模块设计](docs/modules.md) / [Module Design](docs/modules.en.md)
 - [贴吧页面结构](docs/tieba-page-structure.md) / [Tieba Page Structure](docs/tieba-page-structure.en.md)
 - [测试报告](docs/test-report.md) / [Test Report](docs/test-report.en.md)
+- [GitHub Workflows](docs/workflows.md) / [GitHub Workflows (English)](docs/workflows.en.md)
+- [插件设计与使用](docs/plugin.md) / [Plugin Design and Usage](docs/plugin.en.md)
 
 ## License
 

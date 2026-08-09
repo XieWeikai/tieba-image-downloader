@@ -1,0 +1,19 @@
+{
+  "name": "tieba-image-downloader",
+  "version": "0.4.0",
+  "description": "Download original images from Baidu Tieba posts through a reusable agent skill.",
+  "author": { "name": "XieWeikai" },
+  "homepage": "https://github.com/XieWeikai/tieba-image-downloader",
+  "repository": "https://github.com/XieWeikai/tieba-image-downloader",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Tieba Original Image Downloader",
+    "shortDescription": "Download original images from a Tieba post.",
+    "longDescription": "Give the agent a Baidu Tieba post URL. The skill installs the verified release binary when needed, runs the resumable downloader, and reports the output without manual CLI or cookie extraction.",
+    "developerName": "XieWeikai",
+    "category": "Productivity",
+    "capabilities": ["Tieba image download", "Resumable download", "Browser-assisted login"],
+    "defaultPrompt": "Use $download-tieba-images to download the original images from the Baidu Tieba post URL I provide and report the result."
+  }
+}

@@ -25,6 +25,21 @@
 
 ## 安装
 
+### AI 插件（推荐）
+
+安装插件后，直接在 ChatGPT/Codex 或 Claude Code 对话中提供贴吧链接即可，不需要手动运行 CLI。Skill 会在首次使用时下载对应的 macOS Release，并用 `SHA256SUMS` 校验后执行。
+
+Claude Code：
+
+```text
+/plugin marketplace add XieWeikai/tieba-image-downloader
+/plugin install tieba-image-downloader@tieba-tools
+```
+
+安装后可以直接说“下载 `https://tieba.baidu.com/p/10918721568` 的全部原图”，或显式调用 `/tieba-image-downloader:download-tieba-images`。Codex/ChatGPT 的安装方式及本地开发安装见[插件设计与使用](docs/plugin.md)。
+
+### CLI
+
 从 GitHub Release 下载对应二进制，赋予执行权限后运行：
 
 ```bash
@@ -133,6 +148,8 @@ cargo build --release
 - [模块设计](docs/modules.md) / [Module Design](docs/modules.en.md)
 - [贴吧页面结构](docs/tieba-page-structure.md) / [Tieba Page Structure](docs/tieba-page-structure.en.md)
 - [测试报告](docs/test-report.md) / [Test Report](docs/test-report.en.md)
+- [GitHub Workflows](docs/workflows.md) / [GitHub Workflows (English)](docs/workflows.en.md)
+- [插件设计与使用](docs/plugin.md) / [Plugin Design and Usage](docs/plugin.en.md)
 
 ## 许可
 

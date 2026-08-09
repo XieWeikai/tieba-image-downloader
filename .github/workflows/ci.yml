@@ -32,6 +32,13 @@ jobs:
         run: cargo clippy --all-targets --all-features --locked -- -D warnings
       - name: Run tests
         run: cargo test --all-targets --locked
+      - name: Validate agent plugin files
+        run: |
+          python3 -m json.tool .agents/plugins/marketplace.json >/dev/null
+          python3 -m json.tool .claude-plugin/marketplace.json >/dev/null
+          python3 -m json.tool plugins/tieba-image-downloader/.codex-plugin/plugin.json >/dev/null
+          python3 -m json.tool plugins/tieba-image-downloader/.claude-plugin/plugin.json >/dev/null
+          sh -n plugins/tieba-image-downloader/skills/download-tieba-images/scripts/run.sh
 
   macos:
     name: macOS build and tests

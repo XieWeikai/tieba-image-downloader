@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tieba Original Images"
+  short_description: "Download original Tieba images without copying cookies"
+  default_prompt: "Use $download-tieba-images to download the original images from the Baidu Tieba post URL I provide and report the result."

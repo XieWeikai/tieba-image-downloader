@@ -1,0 +1,10 @@
+{
+  "name": "tieba-image-downloader",
+  "version": "0.4.0",
+  "description": "Download original images from Baidu Tieba posts through a reusable skill.",
+  "author": { "name": "XieWeikai" },
+  "homepage": "https://github.com/XieWeikai/tieba-image-downloader",
+  "repository": "https://github.com/XieWeikai/tieba-image-downloader",
+  "license": "MIT",
+  "skills": "./skills/"
+}

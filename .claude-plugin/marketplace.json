@@ -1,0 +1,19 @@
+{
+  "name": "tieba-tools",
+  "description": "Agent skills for downloading user-authorized content from Baidu Tieba.",
+  "owner": { "name": "XieWeikai" },
+  "plugins": [
+    {
+      "name": "tieba-image-downloader",
+      "source": "./plugins/tieba-image-downloader",
+      "description": "Download original images from Baidu Tieba posts through a reusable skill.",
+      "version": "0.4.0",
+      "author": { "name": "XieWeikai" },
+      "homepage": "https://github.com/XieWeikai/tieba-image-downloader",
+      "repository": "https://github.com/XieWeikai/tieba-image-downloader",
+      "license": "MIT",
+      "category": "Productivity",
+      "tags": ["tieba", "images", "download"]
+    }
+  ]
+}

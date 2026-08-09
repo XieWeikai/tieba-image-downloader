@@ -1,0 +1,20 @@
+{
+  "name": "tieba-tools",
+  "interface": {
+    "displayName": "Tieba Tools"
+  },
+  "plugins": [
+    {
+      "name": "tieba-image-downloader",
+      "source": {
+        "source": "local",
+        "path": "./plugins/tieba-image-downloader"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
