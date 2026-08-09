@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-PLUGIN_VERSION="0.4.0"
+PLUGIN_VERSION="0.4.1"
 REPOSITORY="XieWeikai/tieba-image-downloader"
 BINARY_NAME="tieba-image-downloader"
 
@@ -47,8 +47,10 @@ install_release() {
     trap 'rm -rf "${temp_dir}"' EXIT HUP INT TERM
 
     printf '%s\n' "Installing verified ${BINARY_NAME} v${PLUGIN_VERSION}..." >&2
-    curl --fail --location --silent --show-error "${base_url}/${archive}" --output "${temp_dir}/${archive}"
-    curl --fail --location --silent --show-error "${base_url}/SHA256SUMS" --output "${temp_dir}/SHA256SUMS"
+    curl --fail --location --silent --show-error --connect-timeout 20 --retry 3 --retry-all-errors \
+        "${base_url}/${archive}" --output "${temp_dir}/${archive}"
+    curl --fail --location --silent --show-error --connect-timeout 20 --retry 3 --retry-all-errors \
+        "${base_url}/SHA256SUMS" --output "${temp_dir}/SHA256SUMS"
 
     expected="$(awk -v name="${archive}" '$2 == "dist/" name || $2 == name { print $1; exit }' "${temp_dir}/SHA256SUMS")"
     actual="$(shasum -a 256 "${temp_dir}/${archive}" | awk '{print $1}')"

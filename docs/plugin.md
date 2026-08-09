@@ -63,7 +63,7 @@ flowchart TD
     B --> C[Skill 校验 URL 并映射参数]
     C --> D{PATH 或环境变量中有程序?}
     D -- 是 --> H[启动下载器]
-    D -- 否 --> E[按 macOS 架构下载 v0.4.0 Release]
+    D -- 否 --> E[按 macOS 架构下载 v0.4.1 Release]
     E --> F[读取 SHA256SUMS]
     F --> G{校验一致?}
     G -- 否 --> X[停止，不执行文件]

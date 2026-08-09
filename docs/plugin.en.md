@@ -63,7 +63,7 @@ flowchart TD
     B --> C[Skill validates URL and maps options]
     C --> D{Binary in environment or PATH?}
     D -- Yes --> H[Start downloader]
-    D -- No --> E[Download v0.4.0 release for macOS architecture]
+    D -- No --> E[Download v0.4.1 release for macOS architecture]
     E --> F[Read SHA256SUMS]
     F --> G{Checksum matches?}
     G -- No --> X[Stop without execution]
