@@ -28,7 +28,9 @@ jobs:
       - name: Build downloader
         run: cargo build --release --locked
       - name: Parse public post metadata
+        id: parse
         run: |
+          set +e
           target/release/tieba-image-downloader "${TEST_POST_URL}" \
             --metadata-only \
             --output-format json \
@@ -38,7 +40,22 @@ jobs:
             --login-timeout-secs 120 \
             --page-concurrency 1 \
             --auto-concurrency false \
-            --retries 1 > "${RUNNER_TEMP}/summary.json"
+            --retries 1 \
+            > "${RUNNER_TEMP}/summary.json" \
+            2> "${RUNNER_TEMP}/diagnostic.log"
+          status=$?
+          set -e
+          cat "${RUNNER_TEMP}/diagnostic.log" >&2
+          if [ "${status}" -eq 0 ]; then
+            echo "blocked=false" >> "${GITHUB_OUTPUT}"
+          elif grep -Eq '安全验证|验证码|验证超时|client-rendered|客户端渲染' "${RUNNER_TEMP}/diagnostic.log"; then
+            echo "blocked=true" >> "${GITHUB_OUTPUT}"
+          else
+            exit "${status}"
+          fi
+      - name: Validate metadata contract
+        if: steps.parse.outputs.blocked != 'true'
+        run: |
           jq -e \
             --arg post_id "${TEST_POST_ID}" \
             '.post_id == $post_id and .discovered > 0 and .failed == 0 and (.browser_verification_used | type == "boolean")' \
@@ -47,6 +64,7 @@ jobs:
             'length > 0 and all(.[]; (.normalized_url | type == "string") and (.normalized_url | test("^https://")))' \
             "${RUNNER_TEMP}/tieba-regression/manifest.json"
       - name: Download one bounded image sample
+        if: steps.parse.outputs.blocked != 'true'
         run: |
           image_url=$(jq -r '.[0].normalized_url' "${RUNNER_TEMP}/tieba-regression/manifest.json")
           content_type=$(curl --fail --location --silent --show-error \
@@ -61,16 +79,31 @@ jobs:
           esac
           test -s "${RUNNER_TEMP}/sample-image"
       - name: Record successful check
+        if: steps.parse.outputs.blocked != 'true'
         run: |
           printf '### Live compatibility check passed\n\n- Post: `%s`\n- Scope: metadata plus one bounded image sample\n' \
             "${TEST_POST_ID}" >> "${GITHUB_STEP_SUMMARY}"
+      - name: Record verification-blocked check
+        if: steps.parse.outputs.blocked == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Live Tieba regression blocked by Baidu verification"
+          body="The runner reached Baidu's official security verification for ${TEST_POST_URL}; no bypass or private session was attempted. Compatibility is unverified for this run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          printf '### Live compatibility check blocked\n\nBaidu required interactive verification. No bypass was attempted.\n' >> "${GITHUB_STEP_SUMMARY}"
+          issue=$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')
+          if [ -n "${issue}" ]; then
+            gh issue comment "${issue}" --body "${body}"
+          else
+            gh issue create --title "${title}" --body "${body}"
+          fi
       - name: Create or update regression issue
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          title="Live Tieba regression failed"
-          body="The scheduled compatibility check failed for ${TEST_POST_URL}. No CAPTCHA bypass or private session was used. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          title="Live Tieba compatibility regression"
+          body="The metadata, URL, or image compatibility check failed for ${TEST_POST_URL}. No CAPTCHA bypass or private session was used. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           issue=$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')
           if [ -n "${issue}" ]; then
             gh issue comment "${issue}" --body "${body}"

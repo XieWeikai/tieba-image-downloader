@@ -93,7 +93,7 @@ flowchart LR
     E -- No --> F
 ```
 
-The check does not solve CAPTCHAs, use private cookies, or retain browser profiles, post data, or image artifacts. If GitHub's egress requires an interactive verification, the bounded run fails and records an issue instead of attempting a bypass. Failures reuse one open issue to avoid scheduled duplicate noise. This detects external protocol drift early but does not replace fixture and mock-HTTP tests.
+The check does not solve CAPTCHAs, use private cookies, or retain browser profiles, post data, or image artifacts. If GitHub's egress requires interactive verification, the workflow classifies the run as access-blocked, writes a warning summary, and updates one long-lived issue without attempting a bypass or reporting a code failure. The workflow fails only when accessible metadata violates the JSON, URL, or image checks. Both issue types are reused to avoid scheduled duplicate noise. This detects external protocol drift early but does not replace fixture and mock-HTTP tests.
 
 ## Website Deployment
 
