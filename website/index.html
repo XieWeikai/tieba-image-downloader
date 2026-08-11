@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Tieba Image Downloader 是一个高性能、可恢复、支持 AI Skill 的百度贴吧原图批量下载工具。">
+    <meta name="theme-color" content="#121820">
+    <meta property="og:title" content="Tieba Image Downloader">
+    <meta property="og:description" content="从帖子到原图，稳定、可恢复、可验证。">
+    <meta property="og:image" content="https://xieweikai.github.io/tieba-image-downloader/assets/hero-console.jpg">
+    <meta property="og:type" content="website">
+    <title>Tieba Image Downloader</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="site-header" data-header>
+      <a class="brand" href="#top" aria-label="Tieba Image Downloader 首页">
+        <span class="brand-mark" aria-hidden="true">T</span>
+        <span>Tieba Image Downloader</span>
+      </a>
+      <nav class="desktop-nav" aria-label="主要导航">
+        <a href="#features" data-zh="能力" data-en="Features">能力</a>
+        <a href="#install" data-zh="安装" data-en="Install">安装</a>
+        <a href="#workflow" data-zh="原理" data-en="How it works">原理</a>
+        <a href="#docs" data-zh="文档" data-en="Docs">文档</a>
+      </nav>
+      <div class="header-actions">
+        <div class="language-switch" role="group" aria-label="Language">
+          <button type="button" data-lang="zh" aria-pressed="true">中</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="github-link" href="https://github.com/XieWeikai/tieba-image-downloader" aria-label="在 GitHub 查看项目">GitHub</a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-backdrop" aria-hidden="true"></div>
+        <div class="hero-content">
+          <p class="eyebrow" data-zh="macOS · Rust · AI Skill" data-en="macOS · Rust · AI Skill">macOS · Rust · AI Skill</p>
+          <h1>Tieba Image<br>Downloader</h1>
+          <p class="hero-copy" data-zh="从帖子到原图，稳定、可恢复、可验证。遇到登录或安全验证时，通过隔离浏览器安全地继续，不再手抄 Cookie。" data-en="From post to original images: reliable, resumable, and verified. Continue safely through an isolated browser when Baidu asks for login or verification, without copying cookies.">从帖子到原图，稳定、可恢复、可验证。遇到登录或安全验证时，通过隔离浏览器安全地继续，不再手抄 Cookie。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#install" data-zh="立即安装" data-en="Install now">立即安装</a>
+            <a class="button button-secondary" href="https://github.com/XieWeikai/tieba-image-downloader/releases/latest" data-zh="下载最新版" data-en="Latest release">下载最新版</a>
+          </div>
+          <p class="hero-note" data-zh="MIT 开源 · Apple Silicon 与 Intel · v0.4.1" data-en="MIT licensed · Apple Silicon and Intel · v0.4.1">MIT 开源 · Apple Silicon 与 Intel · v0.4.1</p>
+        </div>
+      </section>
+
+      <section class="proof-band" aria-label="项目特性概览">
+        <div class="proof-item"><strong>32</strong><span data-zh="默认并发" data-en="default workers">默认并发</span></div>
+        <div class="proof-item"><strong>206</strong><span data-zh="断点续传校验" data-en="range validation">断点续传校验</span></div>
+        <div class="proof-item"><strong>SHA-256</strong><span data-zh="发布包校验" data-en="release verification">发布包校验</span></div>
+        <div class="proof-item"><strong>0</strong><span data-zh="手动 Cookie 步骤" data-en="manual cookie steps">手动 Cookie 步骤</span></div>
+      </section>
+
+      <section class="section intro" id="features">
+        <div class="section-heading">
+          <p class="eyebrow" data-zh="为什么选择它" data-en="Why this tool">为什么选择它</p>
+          <h2 data-zh="为真实贴吧页面而设计" data-en="Built for Tieba as it exists today">为真实贴吧页面而设计</h2>
+          <p data-zh="不是一个只会收集 img 标签的脚本。它理解客户端渲染、分页响应、原图地址、访问节流和中断恢复。" data-en="Not another script that collects img tags. It understands client rendering, paginated responses, original-image URLs, throttling, and interrupted transfers.">不是一个只会收集 img 标签的脚本。它理解客户端渲染、分页响应、原图地址、访问节流和中断恢复。</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card feature-card-wide">
+            <span class="feature-index">01</span>
+            <h3 data-zh="隔离浏览器验证" data-en="Isolated browser verification">隔离浏览器验证</h3>
+            <p data-zh="需要登录或安全验证时，打开独立 Chrome 会话。只处理百度域 Cookie，不读取你的个人浏览器配置。" data-en="When login or verification is required, a dedicated Chrome session opens. Only Baidu-domain cookies are handled; your personal profile remains untouched.">需要登录或安全验证时，打开独立 Chrome 会话。只处理百度域 Cookie，不读取你的个人浏览器配置。</p>
+            <div class="mini-browser" aria-hidden="true">
+              <div class="mini-browser-bar"><i></i><i></i><i></i><span>tieba.baidu.com/p/10918721568</span></div>
+              <div class="mini-browser-body"><span class="secure-badge">ISOLATED SESSION</span><b>官方页面验证</b></div>
+            </div>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">02</span>
+            <h3 data-zh="可恢复下载" data-en="Resumable downloads">可恢复下载</h3>
+            <p data-zh="流式写入 .part 文件，严格校验 Range 响应。停止后再次运行即可继续。" data-en="Streams into .part files and validates Range responses before resuming. Run again to continue.">流式写入 .part 文件，严格校验 Range 响应。停止后再次运行即可继续。</p>
+            <progress class="progress-visual" aria-label="下载进度" value="78" max="100">78%</progress>
+            <small>168 / 216 · 78%</small>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">03</span>
+            <h3 data-zh="自适应并发" data-en="Adaptive concurrency">自适应并发</h3>
+            <p data-zh="遇到 403 或 429 自动降速并冷却；网络稳定后逐步恢复，不用反复调参数。" data-en="Backs off and cools down on 403 or 429, then recovers gradually when the connection stabilizes.">遇到 403 或 429 自动降速并冷却；网络稳定后逐步恢复，不用反复调参数。</p>
+            <div class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </article>
+          <article class="feature-card feature-card-wide manifest-card">
+            <span class="feature-index">04</span>
+            <h3 data-zh="确定性归档" data-en="Deterministic archive">确定性归档</h3>
+            <p data-zh="稳定排序、URL 去重、可预测文件名，并生成 manifest、下载状态和失败清单。" data-en="Stable order, URL deduplication, predictable filenames, plus manifest, state, and failure reports.">稳定排序、URL 去重、可预测文件名，并生成 manifest、下载状态和失败清单。</p>
+            <pre><code>manifest.json
+download-state.json
+failed.json
+00001_f0001_a8c4.jpg</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="section install-section" id="install">
+        <div class="section-heading compact">
+          <p class="eyebrow" data-zh="三种入口，同一个下载核心" data-en="Three entry points, one download core">三种入口，同一个下载核心</p>
+          <h2 data-zh="选择你的安装方式" data-en="Choose how you want to run it">选择你的安装方式</h2>
+        </div>
+        <div class="install-tool">
+          <div class="install-tabs" role="tablist" aria-label="安装方式">
+            <button type="button" role="tab" aria-selected="true" data-install="agent" data-zh="AI 插件" data-en="AI plugin">AI 插件</button>
+            <button type="button" role="tab" aria-selected="false" data-install="release">GitHub Release</button>
+            <button type="button" role="tab" aria-selected="false" data-install="source" data-zh="源码构建" data-en="Build from source">源码构建</button>
+          </div>
+          <div class="install-copy">
+            <div>
+              <span class="install-kicker" data-install-label>CLAUDE CODE</span>
+              <h3 data-install-title>安装 Skill，然后直接发送贴吧链接</h3>
+            </div>
+            <button class="copy-button" type="button" data-copy data-zh="复制" data-en="Copy">复制</button>
+          </div>
+          <pre class="command-block"><code data-command>/plugin marketplace add XieWeikai/tieba-image-downloader
+/plugin install tieba-image-downloader@tieba-tools</code></pre>
+          <p class="install-hint" data-install-hint>安装后直接说：“下载这个帖子的全部原图”。Skill 会自行安装经过校验的 CLI。</p>
+        </div>
+      </section>
+
+      <section class="section workflow-section" id="workflow">
+        <div class="section-heading">
+          <p class="eyebrow" data-zh="运行逻辑" data-en="Runtime flow">运行逻辑</p>
+          <h2 data-zh="把复杂情况收进一条清晰流程" data-en="A clear path through the messy parts">把复杂情况收进一条清晰流程</h2>
+        </div>
+        <ol class="workflow-list">
+          <li><span>01</span><div><h3 data-zh="预检帖子" data-en="Probe the post">预检帖子</h3><p data-zh="识别传统 HTML、客户端渲染或验证页面。" data-en="Detect legacy HTML, client rendering, or a challenge page.">识别传统 HTML、客户端渲染或验证页面。</p></div></li>
+          <li><span>02</span><div><h3 data-zh="获取原图记录" data-en="Collect originals">获取原图记录</h3><p data-zh="扫描正文与分页响应，排除头像、表情和装饰资源。" data-en="Scan post bodies and paginated responses, excluding avatars and decoration.">扫描正文与分页响应，排除头像、表情和装饰资源。</p></div></li>
+          <li><span>03</span><div><h3 data-zh="去重与命名" data-en="Deduplicate and name">去重与命名</h3><p data-zh="按楼层稳定排序，并生成可追溯的确定性文件名。" data-en="Sort stably by floor and generate traceable deterministic names.">按楼层稳定排序，并生成可追溯的确定性文件名。</p></div></li>
+          <li><span>04</span><div><h3 data-zh="下载与恢复" data-en="Download and resume">下载与恢复</h3><p data-zh="并发下载、验证内容并持续写入状态文件。" data-en="Download concurrently, validate content, and persist state continuously.">并发下载、验证内容并持续写入状态文件。</p></div></li>
+        </ol>
+      </section>
+
+      <section class="reliability-band">
+        <div class="reliability-copy">
+          <p class="eyebrow" data-zh="可靠性不是附加功能" data-en="Reliability is the product">可靠性不是附加功能</p>
+          <h2 data-zh="每一次写入，都有依据。" data-en="Every write has evidence.">每一次写入，都有依据。</h2>
+          <p data-zh="程序验证 HTTP 状态、Content-Type、Content-Range 和本地字节数。HTML 错误页不会被误存成图片，服务端忽略 Range 时也不会错误追加。" data-en="The downloader validates status, Content-Type, Content-Range, and local byte counts. HTML error pages never become images, and ignored Range requests never corrupt a partial file.">程序验证 HTTP 状态、Content-Type、Content-Range 和本地字节数。HTML 错误页不会被误存成图片，服务端忽略 Range 时也不会错误追加。</p>
+        </div>
+        <div class="validation-ledger" role="group" aria-label="验证项目">
+          <div><span>HTTP 206</span><b data-zh="范围匹配" data-en="range matched">范围匹配</b><i>PASS</i></div>
+          <div><span>Content-Type</span><b>image/jpeg</b><i>PASS</i></div>
+          <div><span>Content-Range</span><b>524288-1048575</b><i>PASS</i></div>
+          <div><span>SHA-256</span><b data-zh="发布资产" data-en="release asset">发布资产</b><i>PASS</i></div>
+        </div>
+      </section>
+
+      <section class="section docs-section" id="docs">
+        <div class="section-heading compact">
+          <p class="eyebrow" data-zh="理解与扩展" data-en="Understand and extend">理解与扩展</p>
+          <h2 data-zh="文档从使用一直深入到实现" data-en="Documentation from usage to internals">文档从使用一直深入到实现</h2>
+        </div>
+        <div class="docs-links">
+          <a href="https://github.com/XieWeikai/tieba-image-downloader/blob/main/docs/architecture.md"><span>01</span><strong data-zh="系统架构" data-en="Architecture">系统架构</strong><i>↗</i></a>
+          <a href="https://github.com/XieWeikai/tieba-image-downloader/blob/main/docs/modules.md"><span>02</span><strong data-zh="模块设计" data-en="Module design">模块设计</strong><i>↗</i></a>
+          <a href="https://github.com/XieWeikai/tieba-image-downloader/blob/main/docs/plugin.md"><span>03</span><strong data-zh="AI 插件" data-en="AI plugin">AI 插件</strong><i>↗</i></a>
+          <a href="https://github.com/XieWeikai/tieba-image-downloader/blob/main/docs/workflows.md"><span>04</span><strong>GitHub Workflows</strong><i>↗</i></a>
+        </div>
+      </section>
+
+      <section class="section faq-section">
+        <div class="section-heading compact"><p class="eyebrow">FAQ</p><h2 data-zh="开始之前" data-en="Before you start">开始之前</h2></div>
+        <div class="faq-list">
+          <details><summary data-zh="它会绕过百度安全验证吗？" data-en="Does it bypass Baidu verification?">它会绕过百度安全验证吗？</summary><p data-zh="不会。需要验证时，它会打开隔离的官方页面，由用户正常完成登录或验证，然后自动继续。" data-en="No. It opens an isolated official page when required, lets the user complete the normal check, then resumes automatically.">不会。需要验证时，它会打开隔离的官方页面，由用户正常完成登录或验证，然后自动继续。</p></details>
+          <details><summary data-zh="中途关闭后要重新下载吗？" data-en="Do interrupted downloads restart?">中途关闭后要重新下载吗？</summary><p data-zh="不需要。再次使用同一输出目录运行，完整文件会跳过，符合条件的 .part 文件会从断点继续。" data-en="No. Run again with the same output directory; complete files are skipped and valid .part files resume.">不需要。再次使用同一输出目录运行，完整文件会跳过，符合条件的 .part 文件会从断点继续。</p></details>
+          <details><summary data-zh="支持哪些系统？" data-en="Which systems are supported?">支持哪些系统？</summary><p data-zh="当前正式支持 macOS 12 及以上版本，Release 同时提供 Apple Silicon 和 Intel 构建。" data-en="The current release supports macOS 12 and newer, with Apple Silicon and Intel builds.">当前正式支持 macOS 12 及以上版本，Release 同时提供 Apple Silicon 和 Intel 构建。</p></details>
+          <details><summary data-zh="可以只下载楼主图片吗？" data-en="Can it download only the original author?">可以只下载楼主图片吗？</summary><p data-zh="可以。在 CLI 使用 --only-author，或直接在 AI 对话中说明“只看楼主”。" data-en="Yes. Pass --only-author in the CLI, or simply ask the AI plugin for original-author images only.">可以。在 CLI 使用 --only-author，或直接在 AI 对话中说明“只看楼主”。</p></details>
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <p class="eyebrow" data-zh="准备好归档一个帖子？" data-en="Ready to archive a post?">准备好归档一个帖子？</p>
+        <h2 data-zh="给它一个链接，剩下的交给下载器。" data-en="Give it a link. Let the downloader handle the rest.">给它一个链接，剩下的交给下载器。</h2>
+        <div class="hero-actions">
+          <a class="button button-primary" href="https://github.com/XieWeikai/tieba-image-downloader/releases/latest" data-zh="下载最新版" data-en="Download latest">下载最新版</a>
+          <a class="button button-dark" href="https://github.com/XieWeikai/tieba-image-downloader" data-zh="查看源代码" data-en="View source">查看源代码</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">T</span><span>Tieba Image Downloader</span></div>
+      <p data-zh="MIT 开源。仅下载你有权访问和保存的内容。" data-en="MIT licensed. Download only content you are authorized to access and save.">MIT 开源。仅下载你有权访问和保存的内容。</p>
+      <a href="https://github.com/XieWeikai">XieWeikai</a>
+    </footer>
+  </body>
+</html>

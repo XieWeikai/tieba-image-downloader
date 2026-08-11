@@ -2,6 +2,8 @@
 
 English | [简体中文](README.md)
 
+[Website](https://xieweikai.github.io/tieba-image-downloader/) · [Latest release](https://github.com/XieWeikai/tieba-image-downloader/releases/latest) · [AI plugin](docs/plugin.en.md)
+
 A high-performance macOS utility for batch-downloading original images from Baidu Tieba post bodies. It supports Tieba's client-rendered pages, opens an isolated Chrome window when login or security verification is required, captures paginated data automatically, and downloads images with resumability and validation.
 
 > Download only content you are authorized to access and save. This program does not solve CAPTCHAs, bypass access controls, or inspect your personal Chrome profile.

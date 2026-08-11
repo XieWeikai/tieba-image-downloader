@@ -11,6 +11,7 @@ flowchart LR
     A[提交或 PR] --> B[Rust CI]
     A --> C[Documentation]
     A --> D[CodeQL]
+    A --> P[GitHub Pages]
     S[每周计划] --> E[Security Audit]
     S --> F[Dependabot]
     T[vX.Y.Z 标签] --> G[Release]
@@ -21,6 +22,7 @@ flowchart LR
     F --> J[依赖更新 PR]
     G --> K[双架构资产 + SHA256SUMS]
     K --> L[CLI 与 AI 插件安装]
+    P --> W[项目官网]
 ```
 
 ## 工作流清单
@@ -32,6 +34,7 @@ flowchart LR
 | `codeql.yml` | push、PR、每周、手动 | Rust 静态安全分析 | `security-events: write`，上传 SARIF；公开仓库运行 |
 | `audit.yml` | `Cargo.lock` 变更、每周、手动 | `cargo audit` 检查已知漏洞 | 复用维护方 Workflow，`contents: read` |
 | `release.yml` | `vX.Y.Z` 标签、手动 | 测试、双架构构建、打包、校验和、GitHub Release | `contents: write`，仅用于发布资产 |
+| `pages.yml` | `website/` 或 Workflow 变更、手动 | 打包静态官网并部署到 GitHub Pages | `pages: write` 与 `id-token: write`，仅用于 Pages 部署 |
 | `dependabot.yml` | 每周计划 | 更新 Cargo 与 GitHub Actions 依赖 | 创建独立 PR，便于审阅和回滚 |
 
 ## Rust CI
@@ -70,6 +73,10 @@ CodeQL 分析源码中的危险数据流；Rust 提取器使用其要求的 `bui
 7. AI 插件随后才能自动下载该版本；校验和不一致会拒绝执行。
 
 发布采用标签作为唯一入口，避免普通提交意外产生公开制品。两个架构独立构建，任一失败都不会发布不完整 Release。
+
+## 官网部署
+
+官网是 `website/` 中的无构建依赖静态站点。`pages.yml` 仅在网站文件变化时运行，通过 GitHub 官方 Pages Actions 上传并部署制品。生产地址固定为 `https://xieweikai.github.io/tieba-image-downloader/`，同时记录在 README 和仓库 Website 字段中。网站不使用自定义 Secret，不执行仓库代码，也不把 `target/` 或其他开发产物上传到 Pages。
 
 ## 维护与故障处理
 

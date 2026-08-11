@@ -2,6 +2,8 @@
 
 [English](README.en.md) | 简体中文
 
+[官方网站](https://xieweikai.github.io/tieba-image-downloader/) · [最新版本](https://github.com/XieWeikai/tieba-image-downloader/releases/latest) · [AI 插件](docs/plugin.md)
+
 一个面向 macOS 的高性能百度贴吧正文原图批量下载工具。它可以处理贴吧当前的客户端渲染页面，在需要登录或安全验证时打开独立 Chrome 窗口，自动捕获分页数据，并以可恢复、可校验的方式下载原图。
 
 > 仅下载你有权访问和保存的内容。本程序不会破解验证码、绕过访问权限或读取个人 Chrome 配置。

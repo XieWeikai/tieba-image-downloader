@@ -11,6 +11,7 @@ flowchart LR
     A[Commit or PR] --> B[Rust CI]
     A --> C[Documentation]
     A --> D[CodeQL]
+    A --> P[GitHub Pages]
     S[Weekly schedule] --> E[Security Audit]
     S --> F[Dependabot]
     T[vX.Y.Z tag] --> G[Release]
@@ -21,6 +22,7 @@ flowchart LR
     F --> J[Dependency update PR]
     G --> K[Two architectures + SHA256SUMS]
     K --> L[CLI and AI plugin installation]
+    P --> W[Project website]
 ```
 
 ## Inventory
@@ -32,6 +34,7 @@ flowchart LR
 | `codeql.yml` | push, PR, weekly, manual | Rust static security analysis | `security-events: write` to upload SARIF; runs for public repositories |
 | `audit.yml` | `Cargo.lock` changes, weekly, manual | Known-vulnerability checks with `cargo audit` | Reuses maintained workflow; `contents: read` |
 | `release.yml` | `vX.Y.Z` tag, manual | Test, two-architecture build, package, checksum, GitHub Release | `contents: write` only for release assets |
+| `pages.yml` | `website/` or workflow changes, manual | Package the static website and deploy it to GitHub Pages | `pages: write` and `id-token: write`, scoped to Pages deployment |
 | `dependabot.yml` | weekly | Cargo and GitHub Actions dependency updates | Separate PRs allow review and rollback |
 
 ## Rust CI
@@ -70,6 +73,10 @@ Workflows are read-only by default. Only CodeQL receives `security-events: write
 7. The AI plugin can then bootstrap that version and rejects any checksum mismatch.
 
 Tags are the only release entry point, preventing ordinary commits from publishing artifacts accidentally. Architectures build independently, and an incomplete matrix cannot publish a release.
+
+## Website Deployment
+
+The project website is a dependency-free static site under `website/`. `pages.yml` runs only when website files change and uses GitHub's official Pages actions to upload and deploy the artifact. The production URL is `https://xieweikai.github.io/tieba-image-downloader/`; it is also recorded in both READMEs and the repository Website field. The site uses no custom secret, executes no repository code, and never uploads `target/` or other development artifacts.
 
 ## Maintenance and Failures
 
