@@ -14,6 +14,7 @@ classDiagram
     main --> downloader
     main --> state
     main --> keychain
+    main --> report
     cli --> config
     parser --> image_url
     downloader --> image_url
@@ -100,6 +101,10 @@ flowchart TD
 ## `state.rs`：任务持久化
 
 保存每个目标文件的 `pending/running/completed/failed` 状态、字节数、错误和更新时间。JSON 先写同目录临时文件，刷新后重命名，减少断电时留下截断 JSON 的概率。
+
+## `report.rs`：结果接口
+
+`RunSummary` 是 CLI、测试与 Agent 插件共享的最终结果接口。任务编排只构造一次结果；文本模式将它转换为面向用户的完成提示，JSON 模式则直接序列化到 stdout。进度信息独立写入 stderr，因此修改界面文案不会破坏自动化解析。`OutputFormat` 也归属该模块，使输出策略与命令参数解析保持解耦。
 
 ## `error.rs`：错误语义
 

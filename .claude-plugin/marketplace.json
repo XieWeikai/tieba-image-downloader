@@ -7,7 +7,7 @@
       "name": "tieba-image-downloader",
       "source": "./plugins/tieba-image-downloader",
       "description": "Download original images from Baidu Tieba posts through a reusable skill.",
-      "version": "0.4.1",
+      "version": "0.5.0",
       "author": { "name": "XieWeikai" },
       "homepage": "https://github.com/XieWeikai/tieba-image-downloader",
       "repository": "https://github.com/XieWeikai/tieba-image-downloader",

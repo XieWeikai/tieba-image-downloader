@@ -39,6 +39,8 @@ jobs:
           python3 -m json.tool plugins/tieba-image-downloader/.codex-plugin/plugin.json >/dev/null
           python3 -m json.tool plugins/tieba-image-downloader/.claude-plugin/plugin.json >/dev/null
           sh -n plugins/tieba-image-downloader/skills/download-tieba-images/scripts/run.sh
+      - name: Check version synchronization
+        run: ./scripts/check-version-sync.sh
 
   macos:
     name: macOS build and tests

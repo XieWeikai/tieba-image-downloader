@@ -8,6 +8,7 @@ pub mod error;
 pub mod image_url;
 pub mod keychain;
 pub mod parser;
+pub mod report;
 pub mod state;
 pub mod tieba;
 

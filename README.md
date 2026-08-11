@@ -18,6 +18,7 @@
 - 流式下载、`.part` 断点续传、独立重试和 Ctrl+C 安全停止。
 - 自动调节下载并发；遇到 403/429 时降低并发并冷却。
 - 校验 HTTP 状态、`Content-Type` 和 Range 响应，拒绝 HTML 错误页。
+- 提供稳定的 JSON 结果契约，供脚本、ChatGPT/Codex 和 Claude Code 直接解析。
 
 ## 系统要求
 
@@ -96,6 +97,12 @@ tieba-image-downloader URL --clear-login
 
 # 使用指定 Chromium 浏览器
 tieba-image-downloader URL --chrome-path '/Applications/Chromium.app/Contents/MacOS/Chromium'
+
+# 机器可读结果；进度与验证提示仍显示在 stderr
+tieba-image-downloader URL --output-format json
+
+# 只生成图片元数据清单，不下载图片
+tieba-image-downloader URL --metadata-only --output-format json
 ```
 
 默认输出目录为 `~/Downloads/tieba_<帖子 ID>`。全部参数见：
@@ -134,6 +141,8 @@ failed.json           本轮最终失败项
 
 再次使用相同输出目录运行即可恢复。服务器返回 206 时校验 `Content-Range` 后追加；返回 200 时从头覆盖；416 仅在服务器声明的总长度等于本地大小时认定完成。
 
+`--output-format json` 成功时在 stdout 输出唯一的 JSON 对象，字段包括帖子 ID、绝对输出目录、发现/完成/跳过/失败数量，以及是否使用浏览器验证。详细契约见[结构化输出](docs/structured-output.md)。
+
 ## 开发
 
 ```bash
@@ -142,6 +151,7 @@ cargo check --all-targets
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-targets
 cargo build --release
+./scripts/check-version-sync.sh
 ```
 
 ## 文档
@@ -152,6 +162,7 @@ cargo build --release
 - [测试报告](docs/test-report.md) / [Test Report](docs/test-report.en.md)
 - [GitHub Workflows](docs/workflows.md) / [GitHub Workflows (English)](docs/workflows.en.md)
 - [插件设计与使用](docs/plugin.md) / [Plugin Design and Usage](docs/plugin.en.md)
+- [结构化输出](docs/structured-output.md) / [Structured Output](docs/structured-output.en.md)
 
 ## 许可
 

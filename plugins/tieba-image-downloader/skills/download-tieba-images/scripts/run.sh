@@ -1,19 +1,23 @@
 #!/bin/sh
 set -eu
 
-PLUGIN_VERSION="0.4.1"
+PLUGIN_VERSION="0.5.0"
 REPOSITORY="XieWeikai/tieba-image-downloader"
 BINARY_NAME="tieba-image-downloader"
 
 find_binary() {
     if [ -n "${TIEBA_IMAGE_DOWNLOADER_BIN:-}" ] && [ -x "${TIEBA_IMAGE_DOWNLOADER_BIN}" ]; then
-        printf '%s\n' "${TIEBA_IMAGE_DOWNLOADER_BIN}"
+        candidate="${TIEBA_IMAGE_DOWNLOADER_BIN}"
+    elif command -v "${BINARY_NAME}" >/dev/null 2>&1; then
+        candidate="$(command -v "${BINARY_NAME}")"
+    else
+        return 1
+    fi
+    if [ "$("${candidate}" --version 2>/dev/null | awk '{print $2}')" = "${PLUGIN_VERSION}" ]; then
+        printf '%s\n' "${candidate}"
         return 0
     fi
-    if command -v "${BINARY_NAME}" >/dev/null 2>&1; then
-        command -v "${BINARY_NAME}"
-        return 0
-    fi
+    printf '%s\n' "Ignoring incompatible ${BINARY_NAME}; v${PLUGIN_VERSION} is required." >&2
     return 1
 }
 
@@ -66,4 +70,4 @@ install_release() {
 }
 
 binary="$(find_binary || install_release)"
-exec "${binary}" "$@"
+exec "${binary}" "$@" --output-format json

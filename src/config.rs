@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use crate::report::OutputFormat;
+
 #[derive(Debug, Clone)]
 pub struct Config {
     pub thread_url: String,
@@ -18,4 +20,6 @@ pub struct Config {
     pub remember_login: bool,
     pub clear_login: bool,
     pub diagnostic_html_dir: Option<PathBuf>,
+    pub output_format: OutputFormat,
+    pub metadata_only: bool,
 }

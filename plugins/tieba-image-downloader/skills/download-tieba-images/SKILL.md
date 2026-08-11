@@ -21,9 +21,11 @@ Use the bundled `scripts/run.sh`; do not ask the user to install or invoke the C
    "<skill-directory>/scripts/run.sh" '<canonical-url>' [flags]
    ```
 
+   The script pins a compatible downloader and always adds `--output-format json`. Human-readable progress and browser instructions are written to stderr. On success, stdout contains exactly one JSON object.
 5. Keep the process attached until it exits. If an isolated Chrome window opens, tell the user only that Baidu requires them to complete its official login or verification in that window. Never request cookies, passwords, developer-tools output, or CAPTCHA-solving data.
-6. On success, report the absolute output directory and the downloader's completed/skipped/failed counts. Mention `failed.json` only when failures remain.
-7. On failure, quote the concise error and preserve the output directory for resume. Retry only transient download failures; do not attempt to bypass Baidu access controls.
+6. Parse stdout as JSON. Do not extract results from progress text. Require `post_id`, `output_dir`, `discovered`, `completed`, `skipped`, `failed`, and `browser_verification_used`; treat missing fields or invalid JSON as an execution failure.
+7. On success, report the absolute `output_dir` and the `completed`/`skipped`/`failed` counts. Mention `failed.json` only when `failed` is greater than zero. Mention browser verification only when `browser_verification_used` is true.
+8. On failure, quote the concise stderr error and preserve the output directory for resume. Retry only transient download failures; do not attempt to bypass Baidu access controls.
 
 ## Safety
 

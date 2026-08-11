@@ -15,6 +15,7 @@ use tieba_image_downloader::{
         ImageRecord, api_total_pages, looks_like_client_rendered_shell, looks_like_verification,
         parse_api_page, parse_page, sort_deduplicate, total_pages,
     },
+    report::{OutputFormat, RunSummary},
     state::{DownloadState, ItemState, ItemStatus, atomic_write_json},
     tieba::{extract_thread_id, page_url},
 };
@@ -301,30 +302,56 @@ async fn download_all(
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
-    if let Err(error) = run().await {
-        eprintln!("错误：{error}");
-        std::process::exit(1);
+    let config = match cli::collect() {
+        Ok(config) => config,
+        Err(error) => {
+            eprintln!("错误：{error}");
+            std::process::exit(1);
+        }
+    };
+    let output_format = config.output_format;
+    match run(config).await {
+        Ok(summary) if output_format == OutputFormat::Json => {
+            println!("{}", serde_json::to_string(&summary).unwrap());
+        }
+        Ok(_) => {}
+        Err(error) => {
+            eprintln!("错误：{error}");
+            std::process::exit(1);
+        }
     }
 }
 
-async fn run() -> Result<()> {
-    let config = cli::collect()?;
+fn info(output_format: OutputFormat, message: impl std::fmt::Display) {
+    if output_format == OutputFormat::Json {
+        eprintln!("{message}");
+    } else {
+        println!("{message}");
+    }
+}
+
+async fn run(config: Config) -> Result<RunSummary> {
     let id = extract_thread_id(&config.thread_url)?;
     tokio::fs::create_dir_all(&config.output_dir).await?;
+    let output_dir = std::path::absolute(&config.output_dir)?;
+    let mut browser_verification_used = false;
     if config.clear_login {
         keychain::clear()?;
-        println!("已清除 macOS 钥匙串中的贴吧会话。");
+        info(config.output_format, "已清除 macOS 钥匙串中的贴吧会话。");
     }
     let cookie = match &config.cookie_file {
         Some(path) => {
             let value = load_cookie(path).await?;
-            println!("已加载 Cookie 文件（内容不会写入日志或任务状态）");
+            info(
+                config.output_format,
+                "已加载 Cookie 文件（内容不会写入日志或任务状态）",
+            );
             Some(value)
         }
         None => {
             let saved = keychain::load()?;
             if saved.is_some() {
-                println!("已从 macOS 钥匙串加载贴吧会话。");
+                info(config.output_format, "已从 macOS 钥匙串加载贴吧会话。");
             }
             saved
         }
@@ -338,7 +365,7 @@ async fn run() -> Result<()> {
         }
     });
 
-    println!("正在以单请求预检帖子访问权限...");
+    info(config.output_format, "正在以单请求预检帖子访问权限...");
     let first_attempt = fetch_page(
         &client,
         id,
@@ -352,8 +379,15 @@ async fn run() -> Result<()> {
     let first = match first_attempt {
         Ok(html) => html,
         Err(error) if config.browser_login && error.requires_browser_login() => {
-            println!("检测到百度安全验证，即将打开专用 Chrome 窗口。");
-            println!("请在窗口内正常登录并完成验证；程序会自动检测成功，无需打开开发者工具。");
+            browser_verification_used = true;
+            info(
+                config.output_format,
+                "检测到百度安全验证，即将打开专用 Chrome 窗口。",
+            );
+            info(
+                config.output_format,
+                "请在窗口内正常登录并完成验证；程序会自动检测成功，无需打开开发者工具。",
+            );
             let browser_result = chrome_auth::login(
                 &config.thread_url,
                 config.only_author,
@@ -363,7 +397,7 @@ async fn run() -> Result<()> {
             .await?;
             if config.remember_login {
                 keychain::save(&browser_result.cookie)?;
-                println!("会话已安全保存到 macOS 钥匙串。");
+                info(config.output_format, "会话已安全保存到 macOS 钥匙串。");
             }
             client = build_client(Some(browser_result.cookie))?;
             if let Some(directory) = &config.diagnostic_html_dir {
@@ -393,7 +427,10 @@ async fn run() -> Result<()> {
                     .await?;
                 }
             }
-            println!("浏览器验证和渲染完成，正在解析页面...");
+            info(
+                config.output_format,
+                "浏览器验证和渲染完成，正在解析页面...",
+            );
             browser_api_pages = Some(browser_result.page_api_responses);
             browser_result.rendered_html
         }
@@ -406,15 +443,21 @@ async fn run() -> Result<()> {
     if let Some(directory) = &config.diagnostic_html_dir {
         tokio::fs::create_dir_all(directory).await?;
         tokio::fs::write(directory.join("page-1.html"), first.as_bytes()).await?;
-        println!("诊断 HTML 已保存到 {}", directory.display());
+        info(
+            config.output_format,
+            format!("诊断 HTML 已保存到 {}", directory.display()),
+        );
     }
-    println!(
-        "预检通过：帖子 {id}，共 {pages} 页；模式：{}",
-        if config.only_author {
-            "只看楼主"
-        } else {
-            "全帖"
-        }
+    info(
+        config.output_format,
+        format!(
+            "预检通过：帖子 {id}，共 {pages} 页；模式：{}",
+            if config.only_author {
+                "只看楼主"
+            } else {
+                "全帖"
+            }
+        ),
     );
     let page_records = if let Some(api_pages) = browser_api_pages {
         if api_pages.len() != pages {
@@ -433,7 +476,28 @@ async fn run() -> Result<()> {
         scan_pages(&client, &config, id, first, pages, &cancel).await?
     };
     let records = sort_deduplicate(page_records);
+    let discovered = records.len();
     atomic_write_json(&config.output_dir.join("manifest.json"), &records).await?;
+    if config.metadata_only {
+        let summary = RunSummary {
+            post_id: id.to_string(),
+            output_dir: output_dir.display().to_string(),
+            discovered,
+            completed: 0,
+            skipped: 0,
+            failed: 0,
+            browser_verification_used,
+        };
+        info(
+            config.output_format,
+            format!(
+                "元数据检查完成：发现 {} 张正文原图。清单：{}",
+                summary.discovered,
+                config.output_dir.join("manifest.json").display()
+            ),
+        );
+        return Ok(summary);
+    }
     let state: Arc<Mutex<DownloadState>> = Arc::new(Mutex::new(
         records
             .iter()
@@ -445,15 +509,18 @@ async fn run() -> Result<()> {
         &*state.lock().await,
     )
     .await?;
-    println!(
-        "发现 {} 张正文原图；最大下载并发 {}，自动调节 {}",
-        records.len(),
-        config.image_concurrency,
-        if config.auto_concurrency {
-            "开启"
-        } else {
-            "关闭"
-        }
+    info(
+        config.output_format,
+        format!(
+            "发现 {} 张正文原图；最大下载并发 {}，自动调节 {}",
+            records.len(),
+            config.image_concurrency,
+            if config.auto_concurrency {
+                "开启"
+            } else {
+                "关闭"
+            }
+        ),
     );
     let (succeeded, skipped, failed) =
         download_all(&client, &config, records, state.clone(), &cancel).await?;
@@ -463,13 +530,27 @@ async fn run() -> Result<()> {
     )
     .await?;
     atomic_write_json(&config.output_dir.join("failed.json"), &failed).await?;
-    println!(
-        "完成：成功 {succeeded}，跳过 {skipped}，失败 {}。状态目录：{}",
-        failed.len(),
-        config.output_dir.display()
+    info(
+        config.output_format,
+        format!(
+            "完成：成功 {succeeded}，跳过 {skipped}，失败 {}。状态目录：{}",
+            failed.len(),
+            config.output_dir.display()
+        ),
     );
     if cancel.is_cancelled() {
-        println!("已安全停止；.part 文件和任务状态已保留。");
+        info(
+            config.output_format,
+            "已安全停止；.part 文件和任务状态已保留。",
+        );
     }
-    Ok(())
+    Ok(RunSummary {
+        post_id: id.to_string(),
+        output_dir: output_dir.display().to_string(),
+        discovered,
+        completed: succeeded,
+        skipped,
+        failed: failed.len(),
+        browser_verification_used,
+    })
 }

@@ -13,6 +13,7 @@ flowchart LR
     A --> D[CodeQL]
     A --> P[GitHub Pages]
     S[Weekly schedule] --> E[Security Audit]
+    S --> R[Live Tieba Regression]
     S --> F[Dependabot]
     T[vX.Y.Z tag] --> G[Release]
     B --> H{Quality gate}
@@ -23,6 +24,8 @@ flowchart LR
     G --> K[Two architectures + SHA256SUMS]
     K --> L[CLI and AI plugin installation]
     P --> W[Project website]
+    R --> Q{Metadata and sample valid?}
+    Q -- No --> U[Create or update issue]
 ```
 
 ## Inventory
@@ -35,6 +38,7 @@ flowchart LR
 | `audit.yml` | `Cargo.lock` changes, weekly, manual | Known-vulnerability checks with `cargo audit` | Reuses maintained workflow; `contents: read` |
 | `release.yml` | `vX.Y.Z` tag, manual | Test, two-architecture build, package, checksum, GitHub Release | `contents: write` only for release assets |
 | `pages.yml` | `website/` or workflow changes, manual | Package the static website and deploy it to GitHub Pages | `pages: write` and `id-token: write`, scoped to Pages deployment |
+| `live-regression.yml` | weekly, manual | Parse public-test-post metadata and sample one bounded image | `issues: write` to create or update a compatibility issue on failure |
 | `dependabot.yml` | weekly | Cargo and GitHub Actions dependency updates | Separate PRs allow review and rollback |
 
 ## Rust CI
@@ -64,15 +68,32 @@ Workflows are read-only by default. Only CodeQL receives `security-events: write
 
 ## Release Flow
 
-1. Update the version in `Cargo.toml`, `Cargo.lock`, both plugin manifests, and `run.sh`.
+1. Update versions in `Cargo.toml`, `Cargo.lock`, the marketplace, both plugin manifests, and `run.sh`.
 2. Run all quality checks locally and merge into `main`.
-3. Create and push a `vX.Y.Z` tag.
-4. The Release workflow tests and builds on Apple Silicon and Intel runners.
+3. Run `scripts/check-version-sync.sh`, then create and push a `vX.Y.Z` tag.
+4. The Release workflow verifies that the tag and every version field match, then tests and builds on Apple Silicon and Intel runners.
 5. Each runner uploads a `.tar.gz`; the publish job generates `SHA256SUMS`.
 6. The job creates a GitHub Release, uploads assets, and publishes the draft.
 7. The AI plugin can then bootstrap that version and rejects any checksum mismatch.
 
 Tags are the only release entry point, preventing ordinary commits from publishing artifacts accidentally. Architectures build independently, and an incomplete matrix cannot publish a release.
+
+## Live Compatibility Regression
+
+`live-regression.yml` reads public test post `10918721568` every Saturday on an ephemeral macOS runner. It runs `--metadata-only --output-format json` with page concurrency one. A fresh isolated Chrome session may execute Tieba's own client rendering when necessary, but session persistence is disabled. The workflow validates the structured result and every manifest URL, then requests one bounded sample from the first image and requires `Content-Type: image/*`.
+
+```mermaid
+flowchart LR
+    A[Weekly or manual trigger] --> B[Parse public metadata at concurrency one]
+    B --> C{JSON and URLs valid?}
+    C -- No --> F[Create or update GitHub issue]
+    C -- Yes --> D[Request one bounded image sample]
+    D --> E{Content-Type is image/*?}
+    E -- Yes --> G[Write success summary]
+    E -- No --> F
+```
+
+The check does not solve CAPTCHAs, use private cookies, or retain browser profiles, post data, or image artifacts. If GitHub's egress requires an interactive verification, the bounded run fails and records an issue instead of attempting a bypass. Failures reuse one open issue to avoid scheduled duplicate noise. This detects external protocol drift early but does not replace fixture and mock-HTTP tests.
 
 ## Website Deployment
 

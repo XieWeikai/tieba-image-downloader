@@ -14,6 +14,7 @@ classDiagram
     main --> downloader
     main --> state
     main --> keychain
+    main --> report
     cli --> config
     parser --> image_url
     downloader --> image_url
@@ -100,6 +101,10 @@ The downloader consumes a byte stream rather than buffering a full image. `.part
 ## `state.rs`: Task Persistence
 
 Stores `pending/running/completed/failed`, byte count, error, and timestamp for each target. JSON is written to a same-directory temporary file, flushed, and renamed to reduce the chance of a truncated state file after power loss.
+
+## `report.rs`: Result Interface
+
+`RunSummary` is the final result interface shared by the CLI, tests, and agent plugin. Orchestration constructs the result once; text mode turns it into a human completion message while JSON mode serializes it directly to stdout. Progress is kept on stderr, so UI wording can change without breaking automation. `OutputFormat` also belongs to this module, keeping output policy independent from argument parsing.
 
 ## `error.rs`: Error Semantics
 

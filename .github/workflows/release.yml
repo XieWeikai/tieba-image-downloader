@@ -10,9 +10,19 @@ permissions:
   contents: write
 
 jobs:
+  validate:
+    name: Validate release version
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Match tag and all version fields
+        run: ./scripts/check-version-sync.sh "${GITHUB_REF_NAME}"
+
   build:
     name: Build ${{ matrix.suffix }}
     if: startsWith(github.ref, 'refs/tags/v')
+    needs: validate
     strategy:
       fail-fast: false
       matrix:

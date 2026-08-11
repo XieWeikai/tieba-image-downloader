@@ -63,7 +63,7 @@ flowchart TD
     B --> C[Skill validates URL and maps options]
     C --> D{Binary in environment or PATH?}
     D -- Yes --> H[Start downloader]
-    D -- No --> E[Download v0.4.1 release for macOS architecture]
+    D -- No --> E[Download v0.5.0 release for macOS architecture]
     E --> F[Read SHA256SUMS]
     F --> G{Checksum matches?}
     G -- No --> X[Stop without execution]
@@ -72,14 +72,17 @@ flowchart TD
     I -- Yes --> J[Complete official check in isolated Chrome]
     I -- No --> K[Download and resume]
     J --> K
-    K --> L[Agent reports path and result]
+    K --> L[Write one JSON object to stdout]
+    L --> M[Agent reports typed fields]
 ```
 
-`run.sh` checks `TIEBA_IMAGE_DOWNLOADER_BIN`, then `PATH`, and finally installs a release in the user cache. The cache is versioned. Before execution, the archive's SHA-256 digest must match the release manifest.
+`run.sh` checks `TIEBA_IMAGE_DOWNLOADER_BIN`, then `PATH`, and only reuses a binary whose version is exactly v0.5.0. Otherwise, it installs the matching release in a versioned user cache. Before execution, the archive's SHA-256 digest must match the release manifest.
+
+The script always appends `--output-format json`. Human progress and browser instructions go to stderr; successful stdout contains one JSON object. The skill parses `post_id`, `output_dir`, `discovered`, `completed`, `skipped`, `failed`, and `browser_verification_used` by field instead of depending on terminal wording.
 
 ## Versioning and Release
 
-The Rust crate, both plugin manifests, and bootstrap script share one semantic version. Update all of them before creating a `vX.Y.Z` tag. The Release workflow builds both macOS architectures, generates checksums, and publishes assets. First-use plugin installation works only after those assets are available.
+The Rust crate, Cargo lockfile, marketplace manifest, both plugin manifests, and bootstrap script share one semantic version. CI compares them with `scripts/check-version-sync.sh`; the Release workflow also requires the `vX.Y.Z` tag to match before it builds both macOS architectures, generates checksums, and publishes assets.
 
 ## Security Boundary
 

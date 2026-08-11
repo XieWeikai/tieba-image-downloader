@@ -2,7 +2,7 @@ use clap::Parser;
 use dialoguer::{Confirm, Input, Select};
 use std::path::PathBuf;
 
-use crate::{AppError, Result, config::Config, tieba::extract_thread_id};
+use crate::{AppError, Result, config::Config, report::OutputFormat, tieba::extract_thread_id};
 
 fn parse_image_concurrency(value: &str) -> std::result::Result<usize, String> {
     value
@@ -63,6 +63,12 @@ pub struct Args {
     /// 将认证后的页面 HTML 保存到指定目录（仅用于解析调试）
     #[arg(long, hide = true)]
     pub diagnostic_html_dir: Option<PathBuf>,
+    /// 最终结果格式；json 模式只在 stdout 输出一份 JSON
+    #[arg(long, value_enum, default_value_t)]
+    pub output_format: OutputFormat,
+    /// 只解析并写入 manifest.json，不下载图片
+    #[arg(long)]
+    pub metadata_only: bool,
 }
 
 fn default_download_dir(thread_id: u64) -> PathBuf {
@@ -94,6 +100,8 @@ pub fn collect() -> Result<Config> {
             remember_login: args.remember_login,
             clear_login: args.clear_login,
             diagnostic_html_dir: args.diagnostic_html_dir,
+            output_format: args.output_format,
+            metadata_only: args.metadata_only,
         });
     }
     let url: String = Input::new()
@@ -169,5 +177,26 @@ pub fn collect() -> Result<Config> {
         remember_login: true,
         clear_login: false,
         diagnostic_html_dir: None,
+        output_format: args.output_format,
+        metadata_only: args.metadata_only,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_machine_output_and_metadata_mode() {
+        let args = Args::try_parse_from([
+            "tieba-image-downloader",
+            "https://tieba.baidu.com/p/10918721568",
+            "--output-format",
+            "json",
+            "--metadata-only",
+        ])
+        .unwrap();
+        assert_eq!(args.output_format, OutputFormat::Json);
+        assert!(args.metadata_only);
+    }
 }

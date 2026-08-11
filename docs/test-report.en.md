@@ -2,13 +2,17 @@
 
 English | [简体中文](test-report.md)
 
-Test date: 2026-08-09. Platform: macOS arm64.
+Test date: 2026-08-11. Platform: macOS arm64.
 
 ## Local Automation
 
-Using native arm64 Rust/Cargo 1.97.1, `cargo test --all-targets` ran 25 tests: 25 passed and 0 failed. Coverage includes URL handling, HTML and page API parsing, original-image field priority, stable deduplication and naming, Chrome cookie domain filtering, cookie-file import, concurrency bounds, content-type rejection, atomic state writes, and mock HTTP behavior for 200/206/416/429 with `Retry-After`.
+Using native arm64 Rust/Cargo 1.97.1, `cargo test --all-targets` ran 27 tests: 27 passed and 0 failed. Coverage includes URL handling, HTML and page API parsing, original-image field priority, stable deduplication and naming, Chrome cookie domain filtering, cookie-file import, concurrency bounds, content-type rejection, atomic state writes, structured-result and CLI argument contracts, and mock HTTP behavior for 200/206/416/429 with `Retry-After`.
 
 `cargo fmt --all --check`, `cargo check --all-targets`, `cargo clippy --all-targets --all-features -- -D warnings`, and `cargo build --release` all passed.
+
+v0.5.0 also runs `scripts/check-version-sync.sh v0.5.0` to compare Cargo, the lockfile, marketplace, Codex/Claude plugin manifests, and bootstrap script. The weekly Live Regression uses the public test post, parses metadata, and samples one bounded image. It may use a fresh isolated browser for rendering, but never handles CAPTCHAs automatically, uses or saves private sessions, or retains test artifacts. GitHub Actions records that continuing result separately from the local full end-to-end data.
+
+The v0.5.0 release build then ran `--metadata-only --output-format json` against the same public post. The isolated browser captured the current 16 pages and produced 343 deduplicated original-image records. Stdout was one JSON line, `manifest.json` had the same count, and the first bounded sample returned `image/jpeg`. The test intentionally did not download the full set, so the contract reports zero completed images.
 
 ## Real End-to-End Test
 

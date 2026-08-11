@@ -63,7 +63,7 @@ flowchart TD
     B --> C[Skill 校验 URL 并映射参数]
     C --> D{PATH 或环境变量中有程序?}
     D -- 是 --> H[启动下载器]
-    D -- 否 --> E[按 macOS 架构下载 v0.4.1 Release]
+    D -- 否 --> E[按 macOS 架构下载 v0.5.0 Release]
     E --> F[读取 SHA256SUMS]
     F --> G{校验一致?}
     G -- 否 --> X[停止，不执行文件]
@@ -72,14 +72,17 @@ flowchart TD
     I -- 是 --> J[隔离 Chrome 中完成官方验证]
     I -- 否 --> K[下载与断点续传]
     J --> K
-    K --> L[智能体汇报目录和结果]
+    K --> L[stdout 输出单个 JSON 对象]
+    L --> M[智能体按字段汇报结果]
 ```
 
-`run.sh` 优先使用 `TIEBA_IMAGE_DOWNLOADER_BIN`，其次使用 `PATH` 中的程序，最后把 Release 安装到用户缓存。缓存按插件版本隔离，升级不会覆盖旧版本。Release 文件先计算 SHA-256 并与同一 Release 的清单比对，失败时立即终止。
+`run.sh` 优先检查 `TIEBA_IMAGE_DOWNLOADER_BIN`，其次检查 `PATH`；只有版本恰好为 v0.5.0 才会复用，否则安装对应 Release。缓存按插件版本隔离，升级不会覆盖旧版本。Release 文件先计算 SHA-256 并与同一 Release 的清单比对，失败时立即终止。
+
+脚本始终追加 `--output-format json`。下载器把人类进度和浏览器提示写入 stderr，成功时 stdout 只有一个 JSON 对象。Skill 按字段解析 `post_id`、`output_dir`、`discovered`、`completed`、`skipped`、`failed` 和 `browser_verification_used`，不再依赖中文终端文案。
 
 ## 版本与发布
 
-Rust crate、两个插件清单和引导脚本使用同一语义版本。发布时必须同时更新它们，然后创建 `vX.Y.Z` 标签。Release Workflow 构建两种 macOS 架构、生成校验和并发布资产；插件只有在这些资产可用后才能完成首次自动安装。
+Rust crate、Cargo lockfile、市场清单、两个插件清单和引导脚本使用同一语义版本。`scripts/check-version-sync.sh` 在 CI 中逐项比较；Release Workflow 还会确认 `vX.Y.Z` 标签与版本一致，然后才构建两种 macOS 架构、生成校验和并发布资产。
 
 ## 安全边界
 

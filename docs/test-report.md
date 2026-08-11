@@ -2,13 +2,17 @@
 
 [English](test-report.en.md) | 简体中文
 
-测试日期：2026-08-09；平台：macOS arm64。
+测试日期：2026-08-11；平台：macOS arm64。
 
 ## 本地自动化测试
 
-Rust/Cargo 1.97.1，原生架构 arm64。`cargo test --all-targets` 共运行 25 个测试，25 通过、0 失败。范围包括链接、HTML 与页面 API 解析、原图字段优先级、稳定去重命名、Chrome Cookie 域过滤、Cookie 文件导入、并发升降边界、Content-Type、状态原子写入，以及 mock HTTP 200/206/416/429 Retry-After。
+Rust/Cargo 1.97.1，原生架构 arm64。`cargo test --all-targets` 共运行 27 个测试，27 通过、0 失败。范围包括链接、HTML 与页面 API 解析、原图字段优先级、稳定去重命名、Chrome Cookie 域过滤、Cookie 文件导入、并发升降边界、Content-Type、状态原子写入、结构化结果与 CLI 参数契约，以及 mock HTTP 200/206/416/429 Retry-After。
 
 `cargo fmt --all --check`、`cargo check --all-targets`、`cargo clippy --all-targets --all-features -- -D warnings` 与 `cargo build --release` 均通过。
+
+v0.5.0 另外运行 `scripts/check-version-sync.sh v0.5.0`，确认 Cargo、lockfile、市场清单、Codex/Claude 插件清单和引导脚本一致。每周 Live Regression 使用公开测试帖，只解析元数据并对一张图片执行有界抽样；必要时使用全新隔离浏览器渲染，但不自动处理验证码、不使用或保存私人会话、不保存测试产物。该结果由 GitHub Actions 持续记录，不与本地完整端到端数据混合。
+
+v0.5.0 Release 构建随后对同一公开帖子执行 `--metadata-only --output-format json` 真实测试。隔离浏览器捕获当前 16 页响应，得到 343 条去重原图记录；stdout 为单行 JSON，`manifest.json` 数量一致，第一张有界抽样返回 `image/jpeg`。该测试未下载全量图片，因此完成数按契约为 0。
 
 ## 真实端到端与吞吐
 

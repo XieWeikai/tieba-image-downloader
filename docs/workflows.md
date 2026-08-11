@@ -13,6 +13,7 @@ flowchart LR
     A --> D[CodeQL]
     A --> P[GitHub Pages]
     S[每周计划] --> E[Security Audit]
+    S --> R[Live Tieba Regression]
     S --> F[Dependabot]
     T[vX.Y.Z 标签] --> G[Release]
     B --> H{质量门禁}
@@ -23,6 +24,8 @@ flowchart LR
     G --> K[双架构资产 + SHA256SUMS]
     K --> L[CLI 与 AI 插件安装]
     P --> W[项目官网]
+    R --> Q{元数据和样本有效?}
+    Q -- 否 --> U[创建或更新 Issue]
 ```
 
 ## 工作流清单
@@ -35,6 +38,7 @@ flowchart LR
 | `audit.yml` | `Cargo.lock` 变更、每周、手动 | `cargo audit` 检查已知漏洞 | 复用维护方 Workflow，`contents: read` |
 | `release.yml` | `vX.Y.Z` 标签、手动 | 测试、双架构构建、打包、校验和、GitHub Release | `contents: write`，仅用于发布资产 |
 | `pages.yml` | `website/` 或 Workflow 变更、手动 | 打包静态官网并部署到 GitHub Pages | `pages: write` 与 `id-token: write`，仅用于 Pages 部署 |
+| `live-regression.yml` | 每周、手动 | 公开测试帖元数据解析与一张限量图片抽样 | `issues: write`，失败时创建或更新兼容性 Issue |
 | `dependabot.yml` | 每周计划 | 更新 Cargo 与 GitHub Actions 依赖 | 创建独立 PR，便于审阅和回滚 |
 
 ## Rust CI
@@ -64,15 +68,32 @@ CodeQL 分析源码中的危险数据流；Rust 提取器使用其要求的 `bui
 
 ## 发布流程
 
-1. 更新 `Cargo.toml`、`Cargo.lock`、两个插件清单和 `run.sh` 中的版本。
+1. 更新 `Cargo.toml`、`Cargo.lock`、市场清单、两个插件清单和 `run.sh` 中的版本。
 2. 本地运行全部质量检查并合并到 `main`。
-3. 创建并推送 `vX.Y.Z` 标签。
-4. Release Workflow 在 Apple Silicon 和 Intel runner 上分别测试和构建。
+3. 运行 `scripts/check-version-sync.sh`，再创建并推送 `vX.Y.Z` 标签。
+4. Release Workflow 确认标签和所有版本字段一致，再在 Apple Silicon 和 Intel runner 上分别测试和构建。
 5. 每个 runner 上传 `.tar.gz`；发布 Job 生成 `SHA256SUMS`。
 6. 创建 GitHub Release、上传资产并解除草稿状态。
 7. AI 插件随后才能自动下载该版本；校验和不一致会拒绝执行。
 
 发布采用标签作为唯一入口，避免普通提交意外产生公开制品。两个架构独立构建，任一失败都不会发布不完整 Release。
+
+## 真实兼容性回归
+
+`live-regression.yml` 每周六在临时 macOS runner 上读取公开测试帖 `10918721568`。它以单页面并发运行 `--metadata-only --output-format json`，必要时允许全新隔离 Chrome 执行贴吧自己的客户端渲染，但禁用会话保存。随后验证结构化结果及全部 manifest URL，只对第一张图片请求最多一个有界样本并检查 `Content-Type: image/*`。
+
+```mermaid
+flowchart LR
+    A[每周或手动触发] --> B[单并发解析公开帖元数据]
+    B --> C{JSON 和 URL 有效?}
+    C -- 否 --> F[创建或更新 GitHub Issue]
+    C -- 是 --> D[抽样请求一张图片]
+    D --> E{Content-Type 为 image/*?}
+    E -- 是 --> G[记录成功摘要]
+    E -- 否 --> F
+```
+
+该检查不求解验证码、不使用私人 Cookie，也不保存浏览器 profile、帖子或图片制品。若 GitHub 出口触发必须人工完成的验证，任务会在限定时间内失败并记录 Issue，而不会尝试绕过。失败时复用同一个开放 Issue，避免定时任务制造重复问题。它用于尽早发现外部页面协议漂移，不替代 fixture 和 mock HTTP 测试。
 
 ## 官网部署
 

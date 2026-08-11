@@ -19,6 +19,7 @@ A high-performance macOS utility for batch-downloading original images from Baid
 - Streaming downloads, `.part` resume, per-item retries, and safe Ctrl+C handling.
 - Adaptive concurrency with backoff and cooldown on HTTP 403/429.
 - Validate status, `Content-Type`, and Range responses to reject HTML error pages.
+- Expose a stable JSON result contract for scripts, ChatGPT/Codex, and Claude Code.
 
 ## Requirements
 
@@ -84,6 +85,8 @@ tieba-image-downloader URL --concurrency 8 --auto-concurrency false
 tieba-image-downloader URL --remember-login false
 tieba-image-downloader URL --clear-login
 tieba-image-downloader URL --chrome-path '/Applications/Chromium.app/Contents/MacOS/Chromium'
+tieba-image-downloader URL --output-format json
+tieba-image-downloader URL --metadata-only --output-format json
 ```
 
 The default output directory is `~/Downloads/tieba_<post ID>`. Run `tieba-image-downloader --help` for every option.
@@ -118,6 +121,8 @@ failed.json           Items that failed in the current run
 
 Run again with the same output directory to resume. A 206 response is appended only after validating `Content-Range`; a 200 response restarts the file; a 416 response is accepted only when the server's total equals the local size.
 
+On success, `--output-format json` writes exactly one JSON object to stdout. It contains the post ID, absolute output directory, discovered/completed/skipped/failed counts, and whether browser verification was used. See [Structured Output](docs/structured-output.en.md) for the contract.
+
 ## Development
 
 ```bash
@@ -126,6 +131,7 @@ cargo check --all-targets
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-targets
 cargo build --release
+./scripts/check-version-sync.sh
 ```
 
 ## Documentation
@@ -136,6 +142,7 @@ cargo build --release
 - [测试报告](docs/test-report.md) / [Test Report](docs/test-report.en.md)
 - [GitHub Workflows](docs/workflows.md) / [GitHub Workflows (English)](docs/workflows.en.md)
 - [插件设计与使用](docs/plugin.md) / [Plugin Design and Usage](docs/plugin.en.md)
+- [结构化输出](docs/structured-output.md) / [Structured Output](docs/structured-output.en.md)
 
 ## License
 

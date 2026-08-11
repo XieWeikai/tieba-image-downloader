@@ -1,11 +1,11 @@
 [package]
 name = "tieba-image-downloader"
-version = "0.4.1"
+version = "0.5.0"
 edition = "2024"
 description = "High performance, resumable Baidu Tieba original image downloader"
 license = "MIT"
 repository = "https://github.com/XieWeikai/tieba-image-downloader"
-homepage = "https://github.com/XieWeikai/tieba-image-downloader"
+homepage = "https://xieweikai.github.io/tieba-image-downloader/"
 documentation = "https://docs.rs/tieba-image-downloader"
 readme = "README.md"
 keywords = ["tieba", "downloader", "images", "cli", "macos"]

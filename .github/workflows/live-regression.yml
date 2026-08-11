@@ -1,0 +1,79 @@
+name: Live Tieba Regression
+
+on:
+  schedule:
+    - cron: "17 4 * * 6"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: live-tieba-regression
+  cancel-in-progress: false
+
+jobs:
+  compatibility:
+    name: Metadata and one image sample
+    runs-on: macos-15
+    timeout-minutes: 15
+    env:
+      TEST_POST_ID: "10918721568"
+      TEST_POST_URL: "https://tieba.baidu.com/p/10918721568"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build downloader
+        run: cargo build --release --locked
+      - name: Parse public post metadata
+        run: |
+          target/release/tieba-image-downloader "${TEST_POST_URL}" \
+            --metadata-only \
+            --output-format json \
+            --output "${RUNNER_TEMP}/tieba-regression" \
+            --browser-login true \
+            --remember-login false \
+            --login-timeout-secs 120 \
+            --page-concurrency 1 \
+            --auto-concurrency false \
+            --retries 1 > "${RUNNER_TEMP}/summary.json"
+          jq -e \
+            --arg post_id "${TEST_POST_ID}" \
+            '.post_id == $post_id and .discovered > 0 and .failed == 0 and (.browser_verification_used | type == "boolean")' \
+            "${RUNNER_TEMP}/summary.json"
+          jq -e \
+            'length > 0 and all(.[]; (.normalized_url | type == "string") and (.normalized_url | test("^https://")))' \
+            "${RUNNER_TEMP}/tieba-regression/manifest.json"
+      - name: Download one bounded image sample
+        run: |
+          image_url=$(jq -r '.[0].normalized_url' "${RUNNER_TEMP}/tieba-regression/manifest.json")
+          content_type=$(curl --fail --location --silent --show-error \
+            --connect-timeout 10 --max-time 45 --retry 1 \
+            --range 0-4095 --max-filesize 10485760 \
+            --user-agent "tieba-image-downloader-live-regression/${GITHUB_SHA}" \
+            --output "${RUNNER_TEMP}/sample-image" \
+            --write-out '%{content_type}' "${image_url}")
+          case "${content_type}" in
+            image/*) ;;
+            *) echo "Unexpected Content-Type: ${content_type}" >&2; exit 1 ;;
+          esac
+          test -s "${RUNNER_TEMP}/sample-image"
+      - name: Record successful check
+        run: |
+          printf '### Live compatibility check passed\n\n- Post: `%s`\n- Scope: metadata plus one bounded image sample\n' \
+            "${TEST_POST_ID}" >> "${GITHUB_STEP_SUMMARY}"
+      - name: Create or update regression issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Live Tieba regression failed"
+          body="The scheduled compatibility check failed for ${TEST_POST_URL}. No CAPTCHA bypass or private session was used. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          issue=$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')
+          if [ -n "${issue}" ]; then
+            gh issue comment "${issue}" --body "${body}"
+          else
+            gh issue create --title "${title}" --body "${body}"
+          fi
