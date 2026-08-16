@@ -22,7 +22,7 @@ jobs:
       TEST_POST_ID: "10918721568"
       TEST_POST_URL: "https://tieba.baidu.com/p/10918721568"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build downloader
